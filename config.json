@@ -1,0 +1,33 @@
+{
+	"webServerHost" : "127.0.0.1",
+	"webServerPort" : 9600,
+	
+	"statusUpdateTime" : 60,
+	"timezone" : [1, 0],
+	"format24h" : true,
+
+	"instances": [
+		{
+			"discordBotToken" : "xXxXxXxXxX",
+			"serverStatusChanelId" : "00000000",
+			
+			"server_type" : "",
+			"server_host" : "",
+			"server_port" : "",
+			
+			"server_country" : "AU",
+			
+			"server_logo" : "",
+			"server_color" : "#ffffff",
+			
+			"server_enable_headers" : true,
+			"server_enable_playerlist" : true,
+			"server_enable_numbers" : false,
+			"server_enable_rank": false,
+			"server_enable_score": true,
+			"server_enable_graph" : true,
+
+			"steam_btn" : false
+		}
+	]
+}

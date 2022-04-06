@@ -1,5 +1,5 @@
 {
-	"webServerHost" : "127.0.0.1",
+	"webServerHost" : "github.com",
 	"webServerPort" : 9600,
 	
 	"statusUpdateTime" : 60,
@@ -8,8 +8,8 @@
 
 	"instances": [
 		{
-			"discordBotToken" : "xXxXxXxXxX",
-			"serverStatusChanelId" : "00000000",
+			"discordBotToken" : "",
+			"serverStatusChanelId" : "",
 			
 			"server_type" : "",
 			"server_host" : "",
@@ -17,16 +17,27 @@
 			
 			"server_country" : "AU",
 			
-			"server_logo" : "",
 			"server_color" : "#ffffff",
 			
 			"server_enable_headers" : true,
+			"server_header_padding": 47,
+			
 			"server_enable_playerlist" : true,
+			
 			"server_enable_numbers" : false,
+			
 			"server_enable_rank": false,
+			
+			"server_enable_time": true,
+			
 			"server_enable_score": true,
+			"server_sortby_score": true,
+			
+			"server_enable_ping": true,
+			"server_sortby_ping": true,
+			
 			"server_enable_graph" : true,
-
+			
 			"steam_btn" : false
 		}
 	]

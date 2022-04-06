@@ -1,21 +1,25 @@
 # DiscordBot_GameStatus
 
-this is an updated/modified version of https://github.com/Ramzi-Sah/game-status-discordbot-selfhosted
+This is an updated/modified version of https://github.com/Ramzi-Sah/game-status-discordbot-selfhosted
 
-+ fixed gamedig parsing (rank, name, time, score)
-+ fixed formatting
-+ fixed pathing to graph
-+ added additional options to config.json
++ Fixed gamedig parsing (rank, name, time, score, ping)
++ Fixed embed formatting
++ Fixed pathing to graph
++ Added additional options to `config.json`
++ Added sorting by score or ping
++ Added header padding length option (regardless, headers will no longer wrap around)
++ Fixed 'rank' to always sort from '01' onward regardless of sort option chosen
++ Fixed time parsing to make sure it's a valid number
++ Many other code changes/fixes/refactoring
 
-how to install?
+##How to install?
 
-windows...
+Windows...
+1. Make sure `node.js` is installed on the system (https://nodejs.org)
+2. Unpack the files to a directory of your choice.
+3. Open a cmd terminal and change directory to the unpacked files.
+4. In the cmd terminal, type -> npm install
+5. Configure your `config.json` file with your settings.
+6. To launch the bot, type -> `bot.bat` (or `node index.js`)
 
-[00] make sure node.js is installed on the system (https://nodejs.org)
-[01] unpack the files to a directory of your choice.
-[02] open a cmd terminal and change directory to the unpacked files.
-[03] in the cmd terminal, type -> npm install
-[04] configure your config.json files with your settings.
-[05] to launch the bot, type -> bot.bat
-
-note, for the in built http server to function (graph enabled), it needs to be accessible remotely (eg, allowed via firewall + port forwarding)
+> Note, for the in built http server to function (graph enabled), it needs to be accessible remotely (eg, allowed via firewall + port forwarding)

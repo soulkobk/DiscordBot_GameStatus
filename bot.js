@@ -243,19 +243,37 @@ function generateStatusEmbed() {
 		}).then((state) => {
 			
 			//-----------------------------------------------------------------------------------------------
-			// soulkobk edit 20220403 - updated 'players' keys to { rank, name, time, score } for use with dataKeys
+			// soulkobk edit 20220406 - updated 'players' objects to found/defined keys for use with dataKeys parsing
 			let oldplayers = state.players;
 			delete state["players"];
 			Object.assign(state, {players: []});
 			for (let p = 0; p < oldplayers.length; p++) {
+				playerobject = Object.create({});
+				let rank = p + 1 > 9 ? p + 1 : "0" + (p + 1);
+				playerobject.rank = rank;
 				var playername = oldplayers[p].name;
-				var playerscore = oldplayers[p].raw.score;
-				var playertime = oldplayers[p].raw.time;
-				if (playername) {
-					let zero = p + 1 > 9 ? p + 1 : "0" + (p + 1);
-					let rank = p < 10 ? zero : p;
-					state.players.push({ rank: `${rank}`, name: `${playername}`, time: `${playertime}`, score: `${playerscore}` });
+				if (playername != undefined || playername != "") {
+					playerobject.name = playername;
 				};
+				var playertime = oldplayers[p].raw.time;
+				if (playertime != undefined) {
+					playerobject.time = playertime;
+				};
+				var playerscore = oldplayers[p].raw.score;
+				if (playerscore != undefined) {
+					playerobject.score = playerscore;
+				};
+				var playerping = oldplayers[p].raw.ping;
+				if (playerping != undefined) {
+					playerobject.ping = playerping;
+				};
+				state.players.push(playerobject);
+			};
+			if (config["server_sortby_score"]) {
+				state.players.sort(sortby('score', true, parseInt));
+			};
+			if (config["server_sortby_ping"]) {
+				state.players.sort(sortby('ping', false, parseInt));
 			};
 			//-----------------------------------------------------------------------------------------------
 			
@@ -279,17 +297,27 @@ function generateStatusEmbed() {
 			
 			serverName = serverName.substring(0,45) + "...";
 			
-			let stringlength = serverName.length;
-			let stringpadding = ((45 - stringlength) / 2 );
-			serverName = serverName.padStart((stringlength + stringpadding), '᲼');
-			serverName = (serverName.padEnd(stringlength + (stringpadding * 2),'᲼'));
+			let stringlength = 0;
+			let stringpadding = 0;
+			let stringtext = "";
+			
+			
+			stringlength = serverName.length;
+			stringpadding = ((45 - stringlength) / 2 );
+			serverName = serverName.padStart((stringlength + stringpadding), '\u3000');
+			serverName = (serverName.padEnd(stringlength + (stringpadding * 2),'\u3000'));
 			
 			embed.setTitle(serverName);
 			
 			//-----------------------------------------------------------------------------------------------
 			// basic server info
 			if (config["server_enable_headers"]) {
-				embed.addField('\u200B', '`᲼᲼᲼᲼᲼᲼᲼᲼᲼᲼᲼᲼‎‎᲼᲼᲼᲼᲼᲼‎‎᲼᲼᲼᲼᲼ SERVER DETAILS ᲼᲼᲼᲼᲼᲼᲼᲼᲼᲼᲼᲼᲼‎‎᲼᲼᲼᲼᲼᲼‎‎᲼᲼᲼᲼`');
+				stringtext = " S E R V E R   D E T A I L S  ";
+				stringlength = stringtext.length;
+				stringpadding = ((config["server_header_padding"] - stringlength) / 2 );
+				stringtext = stringtext.padStart((stringlength + stringpadding), '\u3000');
+				stringtext = (stringtext.padEnd(stringlength + (stringpadding * 2),'\u3000'));
+				embed.addField('\u200B', '`' + `${stringtext}` + '`');
 			};
 			
 			embed.addField("Status" + ' :', "🟢 " + "Online", true);
@@ -308,7 +336,12 @@ function generateStatusEmbed() {
 			if (config["server_enable_playerlist"] && state.players.length > 0) {
 				
 				if (config["server_enable_headers"]) {
-					embed.addField('\u200B', '`᲼᲼᲼᲼᲼᲼᲼᲼᲼᲼᲼᲼‎‎᲼᲼᲼᲼᲼᲼‎‎᲼᲼᲼᲼᲼᲼᲼ PLAYER LIST ᲼᲼᲼᲼᲼᲼᲼᲼᲼᲼᲼᲼᲼᲼‎‎᲼᲼᲼᲼᲼᲼‎‎᲼᲼᲼᲼`');
+					stringtext = "     P L A Y E R   L I S T    ";
+					stringlength = stringtext.length;
+					stringpadding = ((config["server_header_padding"] - stringlength) / 2 );
+					stringtext = stringtext.padStart((stringlength + stringpadding), '\u3000');
+					stringtext = (stringtext.padEnd(stringlength + (stringpadding * 2),'\u3000'));
+					embed.addField('\u200B', '`' + `${stringtext}` + '`');
 				};
 				
 				// recover game data
@@ -317,11 +350,11 @@ function generateStatusEmbed() {
 				// remove some unwanted data
 				dataKeys = dataKeys.filter(e =>
 					e !== 'frags' && 
+					e !== 'raw' && 
 					e !== 'guid' && 
 					e !== 'id' && 
 					e !== 'team' &&
 					e !== 'squad' &&
-					e !== 'raw' &&
 					e !== 'skin'
 				);
 				
@@ -331,9 +364,21 @@ function generateStatusEmbed() {
 					);
 				};
 				
+				if (!config["server_enable_time"]) {
+					dataKeys = dataKeys.filter(e =>
+						e !== 'time'
+					);
+				};
+				
 				if (!config["server_enable_score"]) {
 					dataKeys = dataKeys.filter(e =>
 						e !== 'score'
+					);
+				};
+								
+				if (!config["server_enable_ping"]) {
+					dataKeys = dataKeys.filter(e =>
+						e !== 'ping'
 					);
 				};
 				
@@ -341,6 +386,7 @@ function generateStatusEmbed() {
 					// check if data key empty
 					if (dataKeys[j] == "") {
 						dataKeys[j] = "\u200B";
+						console.log("data is empty");
 					};
 					let player_datas = "```\n";
 					for (let i = 0; i < state.players.length; i++) {
@@ -355,7 +401,7 @@ function generateStatusEmbed() {
 							if (player_data == "") {
 								player_data = "-";
 							};
-							
+							// --------------------------------------------------------------------
 							// handle discord markdown strings
 							player_data = player_data.replace(/_/g, " ");
 							for (let k = 0; k < player_data.length; k++) {
@@ -363,13 +409,15 @@ function generateStatusEmbed() {
 									player_data = player_data.slice(0, k) + " " + player_data.slice(k+2);
 								};
 							};
-							
-							// time duration on server
-							if (dataKeys[j] == "time") {
-								let date = new Date(state.players[i].time * 1000).toISOString().substr(11,8);
-								player_datas += date;
-							} else {
-								// handle very long strings
+							// --------------------------------------------------------------------
+							// filter rank
+							if (dataKeys[j] == "rank") {
+								let rank = i + 1 > 9 ? i + 1 : "0" + (i + 1);
+								player_datas += rank;
+							};
+							// --------------------------------------------------------------------
+							// filter name
+							if (dataKeys[j] == "name") {
 								player_data = (player_data.length > 16) ? player_data.substring(0, 16 - 3) + "..." : player_data;
 								if (config["server_enable_numbers"]) {
 									let index = i + 1 > 9 ? i + 1 : "0" + (i + 1);
@@ -377,13 +425,34 @@ function generateStatusEmbed() {
 								} else {
 									player_datas += player_data;
 								};
-								
-								if (dataKeys[j] == "ping") player_datas += " ms";
 							};
+							// --------------------------------------------------------------------
+							// filter time
+							if (dataKeys[j] == "time") {
+								let time = state.players[i].time;
+								if (typeof time == 'number' && !isNaN(time)) {
+									let date = new Date(state.players[i].time * 1000).toISOString().substr(11,8);
+									player_datas += date;
+								};
+							};
+							// --------------------------------------------------------------------
+							// filter score
+							if (dataKeys[j] == "score") {
+								let score = state.players[i].score;
+								player_datas += score;
+							}
+							// --------------------------------------------------------------------
+							// filter ping
+							if (dataKeys[j] == "ping") {
+								let ping = state.players[i].ping;
+								player_datas += ping + " ms";
+							}
+							// --------------------------------------------------------------------
 						};
 						player_datas += "\n";
 					};
 					player_datas += "```";
+					
 					dataKeys[j] = dataKeys[j].charAt(0).toUpperCase() + dataKeys[j].slice(1);
 					embed.addField(dataKeys[j] + ' :', player_datas, true);
 				};
@@ -398,8 +467,14 @@ function generateStatusEmbed() {
 			// set graph image
 			if (config["server_enable_graph"]) {
 				if (config["server_enable_headers"]) {
-					embed.addField('\u200B', '`᲼᲼᲼᲼᲼᲼‎‎᲼᲼᲼᲼᲼᲼‎‎᲼᲼᲼᲼᲼᲼᲼᲼᲼᲼᲼ PLAYER GRAPH ᲼᲼᲼᲼᲼᲼᲼᲼᲼᲼᲼᲼᲼‎‎᲼᲼᲼᲼᲼᲼‎‎᲼᲼᲼᲼᲼᲼`');
+					stringtext = "    P L A Y E R   G R A P H   ";
+					stringlength = stringtext.length;
+					stringpadding = ((config["server_header_padding"] - stringlength) / 2 );
+					stringtext = stringtext.padStart((stringlength + stringpadding), '\u3000');
+					stringtext = (stringtext.padEnd(stringlength + (stringpadding * 2),'\u3000'));
+					embed.addField('\u200B', '`' + `${stringtext}` + '`');
 				};
+
 				embed.setImage(
 					"http://" + config["webServerHost"] + ":" + config["webServerPort"] + "/" + 'graph_' + instanceId + '.png' + "?id=" + Date.now()
 				);
@@ -407,6 +482,8 @@ function generateStatusEmbed() {
 			
 			return embed;
 		}).catch(function(error) {
+			
+			console.log("error 1:",error);
 			
 			// set bot activity
 			client.user.setActivity("🔴 Offline.", { type: 'WATCHING' });
@@ -610,4 +687,18 @@ async function generateGraph() {
 function hexToRgb(hex, opacity) {
 	var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
 	return result ? "rgba(" + parseInt(result[1], 16) + ", " + parseInt(result[2], 16) + ", " + parseInt(result[3], 16) + ", " + opacity + ")" : null;
-}
+};
+
+const sortby = (field, reverse, primer) => {
+	const key = primer ?
+	function(x) {
+		return primer(x[field])
+	} :
+	function(x) {
+		return x[field]
+	};
+	reverse = !reverse ? 1 : -1;
+	return function(a, b) {
+		return a = key(a), b = key(b), reverse * ((a > b) - (b > a));
+	};
+};

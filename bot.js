@@ -5,6 +5,7 @@
 		main bot code for game status discord bot (gamedig) - https://discord.gg/vsw2ecxYnH
 	Updated:
 		20220403 - soulkobk, updated player parsing from gamedig, and various other code adjustments
+		20220408 - soulkobk, added in multiple instancing
 */
 
 // read configs
@@ -23,7 +24,7 @@ process.on('message', function(m) {
 		// send ok signal to main process
 		process.send({
 			instanceid : instanceId,
-			message : "instance started."
+			message : "STARTED: instance started."
 		});
 		
 		// init bot
@@ -64,7 +65,7 @@ const client = new Client({
 client.on('ready', async () => {
 	process.send({
 		instanceid : instanceId,
-		message : "Logged in as \"" + client.user.tag + "\"."
+		message : "SUCCESS: logged in as \"" + client.user.tag + "\"."
 	});
 	
 	// wait until process instance id receaived
@@ -73,58 +74,62 @@ client.on('ready', async () => {
 	};
 	
 	// get broadcast chanel
-	let statusChannel = client.channels.cache.get(config["serverStatusChanelId"]);
+	let statusChannel = client.channels.cache.get(config["serverStatusChannelID"]);
 	
 	if (statusChannel == undefined) {
 		process.send({
 			instanceid : instanceId,
-			message : "ERROR: channel id " + config["serverStatusChanelId"] + ", does not exist."
+			message : "ERROR: channel id " + config["serverStatusChannelID"] + ", does not exist."
 		});
 		return;
 	};
 	
-	// get a status message
-	let statusMessage = await createStatusMessage(statusChannel);
+	// search for existing message id from config.json serverStatusMessageID entry - soulkobk
+	let statusMessage = undefined;
+	let statusMessageID = config["serverStatusMessageID"];
+	await statusChannel.messages.fetch({ limit: 100 }).then(messages => {
+		let count = 0;
+		let max = (JSON.parse(JSON.stringify(messages)).length);
+		for (i = 0; i < max; i++) {
+			let discordMessageID = (JSON.parse(JSON.stringify(messages))[i].id);
+			if (statusMessageID === discordMessageID) {
+				statusMessage = messages.get(discordMessageID);
+				return;
+			};
+		};
+	});
 	
+	// if existing message not found, create a new one... - soulkobk
 	if (statusMessage == undefined) {
+		statusMessage = await createStatusMessage(statusChannel);
+		if (statusMessage == undefined) {
+			process.send({
+				instanceid : instanceId,
+				message : "ERROR: could not send the status message."
+			});
+			return;
+		};
 		process.send({
 			instanceid : instanceId,
-			message : "ERROR: could not send the status message."
+			message : "UPDATE: please update config.json 'serverStatusMessageID' entry from '" + config["serverStatusMessageID"] + "' to '" + statusMessage.id + "'"
 		});
-		return;
 	};
-
-	// start server status loop
-	startStatusMessage(statusMessage);
 	
-	// start generate graph loop
+	startStatusMessage(statusMessage);
 	generateGraph();
+
 });
 
 //----------------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------------
 // create/get last status message
 async function createStatusMessage(statusChannel) {
-	// delete old messages except the last one
-	await clearOldMessages(statusChannel, 1);
-	
-	// get last message
-	let statusMessage = await getLastMessage(statusChannel);
-	if (statusMessage != undefined) {
-		// return last message if exists
-		return statusMessage;
-	};
-	
-	// delete all messages
-	await clearOldMessages(statusChannel, 0);
-	
+
 	// create new message
 	let embed = new MessageEmbed();
 	embed.setTitle("instance starting...");
 	embed.setColor('#ffff00');
-	
 
-	
 	return await statusChannel.send({ embeds: [embed] }).then((sentMessage)=> {
 		return sentMessage;
 	});	
@@ -270,10 +275,10 @@ function generateStatusEmbed() {
 				state.players.push(playerobject);
 			};
 			if (config["server_sortby_score"]) {
-				state.players.sort(sortby('score', true, parseInt));
+				state.players.sort(sortBy('score', true, parseInt));
 			};
 			if (config["server_sortby_ping"]) {
-				state.players.sort(sortby('ping', false, parseInt));
+				state.players.sort(sortBy('ping', false, parseInt));
 			};
 			//-----------------------------------------------------------------------------------------------
 			
@@ -301,7 +306,6 @@ function generateStatusEmbed() {
 			let stringpadding = 0;
 			let stringtext = "";
 			
-			
 			stringlength = serverName.length;
 			stringpadding = ((45 - stringlength) / 2 );
 			serverName = serverName.padStart((stringlength + stringpadding), '\u3000');
@@ -323,16 +327,21 @@ function generateStatusEmbed() {
 			embed.addField("Status" + ' :', "🟢 " + "Online", true);
 			embed.addField("Direct Connect" + ' :', state.connect, true);
 			embed.addField("Location" + ' :', `:flag_${config["server_country"].toLowerCase()}:`, true);
-			embed.addField("Game Mode" + ' :', config["server_type"].charAt(0).toUpperCase() + config["server_type"].slice(1) , true);
+			// embed.addField("Game Mode" + ' :', config["server_type"].charAt(0).toUpperCase() + config["server_type"].slice(1) , true);
+			embed.addField("Server" + ' :', config["server_game"].charAt(0).toUpperCase() + config["server_game"].slice(1) , true);
 			if (state.map == "") {
 				embed.addField("\u200B", "\u200B", true);
 			} else {
 				embed.addField("Map" + ' :', state.map.charAt(0).toUpperCase() + state.map.slice(1), true);
 			};
 			embed.addField("Online Players" + ' :', state.players.length + " / " + state.maxplayers, true);
-
+			
 			//-----------------------------------------------------------------------------------------------
 			// player list
+			if (config["server_enable_playerlist"] && state.players.length == 0) {
+				state.players.push({name: '\u3000'});
+			};
+
 			if (config["server_enable_playerlist"] && state.players.length > 0) {
 				
 				if (config["server_enable_headers"]) {
@@ -386,7 +395,6 @@ function generateStatusEmbed() {
 					// check if data key empty
 					if (dataKeys[j] == "") {
 						dataKeys[j] = "\u200B";
-						console.log("data is empty");
 					};
 					let player_datas = "```\n";
 					for (let i = 0; i < state.players.length; i++) {
@@ -418,12 +426,20 @@ function generateStatusEmbed() {
 							// --------------------------------------------------------------------
 							// filter name
 							if (dataKeys[j] == "name") {
-								player_data = (player_data.length > 16) ? player_data.substring(0, 16 - 3) + "..." : player_data;
-								if (config["server_enable_numbers"]) {
-									let index = i + 1 > 9 ? i + 1 : "0" + (i + 1);
-									player_datas += j == 0 ? index +  " - " + player_data : player_data;
+								if (player_data == '\u3000') {
+									if (config["server_enable_numbers"]) {
+										player_datas += "00 - " + player_data;
+									} else {
+										player_datas += player_data;
+									};
 								} else {
-									player_datas += player_data;
+									player_data = (player_data.length > 16) ? player_data.substring(0, 16 - 3) + "..." : player_data;
+									if (config["server_enable_numbers"]) {
+										let index = i + 1 > 9 ? i + 1 : "0" + (i + 1);
+										player_datas += j == 0 ? index +  " - " + player_data : player_data;
+									} else {
+										player_datas += player_data;
+									};
 								};
 							};
 							// --------------------------------------------------------------------
@@ -458,9 +474,6 @@ function generateStatusEmbed() {
 				};
 			};
 			
-			// set bot activity
-			client.user.setActivity("🟢 Online: " + state.players.length + "/" + state.maxplayers, { type: 'WATCHING' });
-
 			// add graph data
 			graphDataPush(updatedTime, state.players.length);
 
@@ -483,11 +496,6 @@ function generateStatusEmbed() {
 			return embed;
 		}).catch(function(error) {
 			
-			console.log("error 1:",error);
-			
-			// set bot activity
-			client.user.setActivity("🔴 Offline.", { type: 'WATCHING' });
-	
 			// offline status message
 			embed.setColor('#ff0000');
 			embed.setTitle('🔴 ' + "Server Offline" + '.');
@@ -499,9 +507,6 @@ function generateStatusEmbed() {
 		});
 	} catch (error) {
 		console.log(error);
-		
-		// set bot activity
-		client.user.setActivity("🔴 Offline.", { type: 'WATCHING' });
 		
 		// offline status message
 		embed.setColor('#ff0000');
@@ -546,8 +551,9 @@ function graphDataPush(updatedTime, nbrPlayers) {
 	});
 };
 
-const width = 800;
-const height = 400;
+const width = 600;
+const height = 300;
+
 const { ChartJSNodeCanvas } = require('chartjs-node-canvas');
 var canvasRenderService = new ChartJSNodeCanvas({width, height});
 
@@ -689,7 +695,7 @@ function hexToRgb(hex, opacity) {
 	return result ? "rgba(" + parseInt(result[1], 16) + ", " + parseInt(result[2], 16) + ", " + parseInt(result[3], 16) + ", " + opacity + ")" : null;
 };
 
-const sortby = (field, reverse, primer) => {
+const sortBy = (field, reverse, primer) => {
 	const key = primer ?
 	function(x) {
 		return primer(x[field])

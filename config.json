@@ -9,11 +9,163 @@
 	"instances": [
 		{
 			"discordBotToken" : "",
-			"serverStatusChanelId" : "",
+
+			"serverStatusChannelID" : "",
+			"serverStatusMessageID" : "",
 			
 			"server_type" : "",
 			"server_host" : "",
 			"server_port" : "",
+			
+			"server_game" : "ARMA 3",
+			
+			"server_country" : "AU",
+			
+			"server_color" : "#ffffff",
+			
+			"server_enable_headers" : true,
+			"server_header_padding": 47,
+			
+			"server_enable_playerlist" : true,
+			
+			"server_enable_numbers" : false,
+			
+			"server_enable_rank": false,
+			
+			"server_enable_time": true,
+			
+			"server_enable_score": true,
+			"server_sortby_score": true,
+			
+			"server_enable_ping": true,
+			"server_sortby_ping": true,
+			
+			"server_enable_graph" : true,
+			
+			"steam_btn" : false
+		},
+		{
+			"discordBotToken" : "",
+
+			"serverStatusChannelID" : "",
+			"serverStatusMessageID" : "",
+			
+			"server_type" : "",
+			"server_host" : "",
+			"server_port" : "",
+			
+			"server_game" : "ARMA 3",
+			
+			"server_country" : "AU",
+			
+			"server_color" : "#ffffff",
+			
+			"server_enable_headers" : true,
+			"server_header_padding": 47,
+			
+			"server_enable_playerlist" : true,
+			
+			"server_enable_numbers" : false,
+			
+			"server_enable_rank": false,
+			
+			"server_enable_time": true,
+			
+			"server_enable_score": true,
+			"server_sortby_score": true,
+			
+			"server_enable_ping": true,
+			"server_sortby_ping": true,
+			
+			"server_enable_graph" : true,
+			
+			"steam_btn" : false
+		},
+		{
+			"discordBotToken" : "",
+
+			"serverStatusChannelID" : "",
+			"serverStatusMessageID" : "",
+			
+			"server_type" : "",
+			"server_host" : "",
+			"server_port" : "",
+			
+			"server_game" : "ASSETTO CORSA",
+			
+			"server_country" : "AU",
+			
+			"server_color" : "#ffffff",
+			
+			"server_enable_headers" : true,
+			"server_header_padding": 47,
+			
+			"server_enable_playerlist" : true,
+			
+			"server_enable_numbers" : false,
+			
+			"server_enable_rank": false,
+			
+			"server_enable_time": true,
+			
+			"server_enable_score": true,
+			"server_sortby_score": true,
+			
+			"server_enable_ping": true,
+			"server_sortby_ping": true,
+			
+			"server_enable_graph" : true,
+			
+			"steam_btn" : false
+		},
+		{
+			"discordBotToken" : "",
+
+			"serverStatusChannelID" : "",
+			"serverStatusMessageID" : "",
+			
+			"server_type" : "",
+			"server_host" : "",
+			"server_port" : "",
+			
+			"server_game" : "TEAMSPEAK 3",
+			
+			"server_country" : "AU",
+			
+			"server_color" : "#ffffff",
+			
+			"server_enable_headers" : true,
+			"server_header_padding": 47,
+			
+			"server_enable_playerlist" : true,
+			
+			"server_enable_numbers" : false,
+			
+			"server_enable_rank": false,
+			
+			"server_enable_time": true,
+			
+			"server_enable_score": true,
+			"server_sortby_score": true,
+			
+			"server_enable_ping": true,
+			"server_sortby_ping": true,
+			
+			"server_enable_graph" : true,
+			
+			"steam_btn" : false
+		},
+		{
+			"discordBotToken" : "",
+
+			"serverStatusChannelID" : "",
+			"serverStatusMessageID" : "",
+			
+			"server_type" : "",
+			"server_host" : "",
+			"server_port" : "",
+			
+			"server_game" : "WRECKFEST",
 			
 			"server_country" : "AU",
 			

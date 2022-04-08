@@ -11,6 +11,7 @@ This is an updated/modified version of https://github.com/Ramzi-Sah/game-status-
 + Fixed 'rank' to always sort from '01' onward regardless of sort option chosen
 + Fixed time parsing to make sure it's a valid number
 + Many other code changes/fixes/refactoring
++ Added multiple instances (config entry)
 
 ##How to install?
 
@@ -23,3 +24,5 @@ Windows...
 6. To launch the bot, type -> `bot.bat` (or `node index.js`)
 
 > Note, for the in built http server to function (graph enabled), it needs to be accessible remotely (eg, allowed via firewall + port forwarding)
+
+Now with the addition of multiple instances, first launch the bot with all "serverStatusMessageID" entries as "". The console window will output what to paste in the config.json once the message ID is returned. Once your config.json is updated and saved, close the bot and relaunch it.

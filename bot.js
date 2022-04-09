@@ -5,7 +5,6 @@
 		main bot code for game status discord bot (gamedig) - https://discord.gg/vsw2ecxYnH
 	Updated:
 		20220403 - soulkobk, updated player parsing from gamedig, and various other code adjustments
-		20220408 - soulkobk, added in multiple instancing
 */
 
 // read configs
@@ -338,6 +337,7 @@ function generateStatusEmbed() {
 			
 			//-----------------------------------------------------------------------------------------------
 			// player list
+			let players_online = 0;
 			if (config["server_enable_playerlist"] && state.players.length == 0) {
 				state.players.push({name: '\u3000'});
 			};
@@ -432,6 +432,7 @@ function generateStatusEmbed() {
 									} else {
 										player_datas += player_data;
 									};
+									players_online = 0;
 								} else {
 									player_data = (player_data.length > 16) ? player_data.substring(0, 16 - 3) + "..." : player_data;
 									if (config["server_enable_numbers"]) {
@@ -440,6 +441,7 @@ function generateStatusEmbed() {
 									} else {
 										player_datas += player_data;
 									};
+									players_online = state.players.length;
 								};
 							};
 							// --------------------------------------------------------------------
@@ -475,7 +477,7 @@ function generateStatusEmbed() {
 			};
 			
 			// add graph data
-			graphDataPush(updatedTime, state.players.length);
+			graphDataPush(updatedTime, players_online);
 
 			// set graph image
 			if (config["server_enable_graph"]) {
